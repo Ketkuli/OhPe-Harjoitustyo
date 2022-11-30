@@ -1,6 +1,8 @@
 # coding: utf-8
 
 # Place for package imports if needed
+import os.path      #used to check if accounting year exists
+
 
 
 #------------------------------------------------------------------
@@ -18,10 +20,13 @@ def choose_year():
     while True:
         try:
             year = int(input("Valitse kirjanpidon tilikausi: "))
+            year_file = f"{year}.csv"
             if year <= 0:
                 print("\nVuoden tulee olla positiivinen kokonaisluku\n")
-            else:
-                year_file = f"{year}.csv"
+            elif os.path.exists(year_file) == False:  #Check to see if there is a file for the year. If not then program returns just year and empty dictionary to start working on the accounting. Not sure if I should create a new file at this point
+                print(f"\nVuotta {year} ei löytynyt, avataan uusi tilikausi.\n")
+                return [year, accounting]
+            else:          
                 with open(year_file) as file:
                     for row in file:
                         row = row.split(";")
@@ -30,8 +35,9 @@ def choose_year():
         except:
             print("\nSyöttämäsi arvo on virheellinen, käytä valinnassa numeroita.\n")
 
-# insert data for your accounting
+# insert data for your accounting dictionary
 def insert_data(accounting: dict):
+    print("")
     date = str(input("Anna päivämäärä: "))
     account = str(input("Anna tili: "))
     while True:
@@ -40,24 +46,34 @@ def insert_data(accounting: dict):
             break
         except ValueError:
             print("\nSyöttämäsi arvo on virheellinen, käytä valinnassa numeroita.\n")
-    description = str(input("Anna selite: "))        
-    accounting[len(accounting)] = [date, account, amount, description]
+    description = str(input("Anna selite: "))
+    print("")        
+    accounting[len(accounting)+1] = [date, account, amount, description]
     return accounting
 
 # Function to print data
-def print_data(some_dict: dict):
-    for key in some_dict:
-        print(f"{key}: {some_dict[key][0]}, {some_dict[key][1]}, {some_dict[key][2]}, {some_dict[key][3]}")
+def print_data(accounting: dict):
+    for key in accounting:
+        print(f"{key}: {accounting[key][0]}, {accounting[key][1]}, {accounting[key][2]}, {accounting[key][3]}")
+    print("")
+
+# Function to write data to a file
+def write_data(year: int, accounting: dict):
+    year_file = f"{year}.csv"
+    with open(year_file, "w") as file:
+        for row in accounting:
+            file.write(f"{row};{accounting[row][0]};{accounting[row][1]};{accounting[row][2]};{accounting[row][3]}\n")
+    print(f"\nKirjanpito tallennettu vuodelta {year} ja palataan päävalikkoon.\n") 
 
 # Program function
 def program(year, accounting):
-    print("\nOhjelma käynnistyi, valitse seuraavista toiminnallisuuksista:\n")
+    print("Ohjelma käynnistyi, valitse seuraavista toiminnallisuuksista:\n")
     while True:
-        print("1: Tee kirjauksia\n2: Tarkastele kirjaukset\n0: Tallenna muutokset ja palaa päävalikkoon")
+        print("\nPäävalikko:\n1: Tee kirjauksia\n2: Tarkastele kirjaukset\n0: Tallenna muutokset ja palaa päävalikkoon")
         try:
             choice2 = int(input("Valinta: "))
             if choice2 == 0:
-                print("\nTallennetaan muutokset ja palataan päävalikkoon.\n") #Tee tähän kutsu funktioon, joka tallentaa tiedot vuoden mukaiseen tiedostoon. Vuosi muuttujassa year.
+                write_data(year, accounting) 
                 break
             elif choice2 == 1:
                 insert_data(accounting)
@@ -77,7 +93,7 @@ def program(year, accounting):
 
 def main():
     print("Hei,\n")
-    print("Tervetuloa käyttämään kirjanpito-ohjelmaa.\nAloita ohjelman käyttö valitsemalla seuraavista toiminnoista:")
+    print("Tervetuloa käyttämään kirjanpito-ohjelmaa.\nAloita ohjelman käyttö valitsemalla seuraavista toiminnoista:\n")
     while True:
         print("1: Ohjelman käytön aloitus ja tilikauden valinta\n2: Ohjelman käyttöohjeet\n0: Ohjelman lopetus")
         try:
