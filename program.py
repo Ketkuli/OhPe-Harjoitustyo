@@ -23,13 +23,14 @@ def choose_year():
             year_file = f"{year}.csv"
             if year <= 0:
                 print("\nVuoden tulee olla positiivinen kokonaisluku\n")
-            elif os.path.exists(year_file) == False:  #Check to see if there is a file for the year. If not then program returns just year and empty dictionary to start working on the accounting. Not sure if I should create a new file at this point
+            elif os.path.exists(year_file) == False:  #Checks if there is a file for the inputted year. If not then program returns just year and empty dictionary to start working on the accounting. Not sure if I should create a new file at this point
                 print(f"\nVuotta {year} ei löytynyt, avataan uusi tilikausi.\n")
                 return [year, accounting]
-            else:          
+            else:
+                print(f"\nAvataan vuoden {year} kirjanpito\n")          
                 with open(year_file) as file:
                     for row in file:
-                        row = row.split(";")
+                        row = row.replace("\n", "").split(";")
                         accounting[row[0]] = [row[1],row[2],row[3],row[4]]
                 return [year, accounting]
         except:
