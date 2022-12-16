@@ -1,8 +1,8 @@
 # coding: utf-8
 
 # Place for package imports if needed
-import os.path as os      #used to check if accounting year exists
-
+import os.path as os      # used to check if accounting year exists
+from datetime import datetime   
 
 
 #------------------------------------------------------------------
@@ -87,16 +87,16 @@ def print_data(accounting: dict):
 
     # Header 
     nro_txt = "Juokseva nro"
-    pvm_txt = "PVM"
-    tili_txt = "Tili"
-    summa__txt = "Summa"
-    selite_txt = "Selite"
-    tosite_txt = "Tositteet" 
+    date_txt = "PVM"
+    account_txt = "Tili"
+    sum__txt = "Summa"
+    expl_txt = "Selite"
+    heading_txt = "Tositteet" 
     print("\n" + "-" * 80)
-    print(f"{tosite_txt:^80}")
+    print(f"{heading_txt:^80}")
     print("-" * 80)
-    print(f"{nro_txt:13} {pvm_txt:^15} {tili_txt:14} {summa__txt:10} \
-{selite_txt:29}")
+    print(f"{nro_txt:13} {date_txt:^15} {account_txt:14} {sum__txt:10} \
+{expl_txt:29}")
 
 
     # Print loop for each key in dictionary
@@ -130,15 +130,56 @@ def print_balance(year: int, accounting: dict):
     """
 
     # Header
-    tuloslaskelma_txt = "Tuloslaskelma"
-    tilik = f"Tilikaudelle {year}" 
-    print("\n" + "-" * 80)
-    print(f"{tuloslaskelma_txt:^80}")
-    print(f"{tilik:^80}")
-    print("-" * 80)
+    heading_txt = "Tuloslaskelma"
+    ingress_txt = f"Tilikaudelle {year}" 
+    print("\n" + "-" * 31)
+    print(f"{heading_txt:^31}")
+    print(f"{ingress_txt:^31}")
+    print("-" * 31)
     print("")
 
+    # Making new dictionaries for expenses and revenues
+    expenses = {}
+    revenues = {}
+    for key in accounting:
+        account = accounting[key][1]
+        amount = float(accounting[key][2])
+        if amount < 0:
+            if account not in expenses:
+                expenses[account] = []
+            expenses[account].append(amount)
+        else:
+            if account not in revenues:
+                revenues[account] = []
+            revenues[account].append(amount)
+    # Sorting to alphabetical order by keys
+    expenses = dict(sorted(expenses.items()))
+    revenues = dict(sorted(revenues.items()))
 
+
+    # Printing loops
+    print("  Tulot:") # Revenues
+    print("  "+"-" * 27)
+    together_txt = "Yhteensä"
+    balance_txt = "Tulos: "
+    total_revenue = 0
+    for key in revenues:
+        sum_calc = sum(revenues[key])
+        total_revenue += sum_calc
+        print(f"  {key:20}{sum_calc:7}")
+    print("  "+"-" * 27)
+    print(f"  {together_txt:20}{total_revenue:7}\n")
+    print("  "+"Kulut:") # Expenses
+    print("  "+"-" * 27)
+    total_expense = 0
+    for key in expenses:
+        sum_calc = -1 * sum(expenses[key])
+        total_expense += sum_calc
+        print(f"  {key:20}{sum_calc:7}")
+    print("  "+"-" * 27)
+    print(f"  {together_txt:20}{total_expense:7}\n")
+    balance_sum = total_revenue - total_expense
+    print(f"  {balance_txt:20}{balance_sum:7}")    
 
 
 
