@@ -65,13 +65,18 @@ def insert_data(accounting: dict):
             break
         else:
             print("\nSyöttämäsi arvo on virheellinen, \
-käytä valinnassa annettuja kirjaimia.\n")
-    date_input = str(input("Anna päivämäärä: "))
-    date_input = date_input.split(".")
-    year = int(date_input[2])
-    month = int(date_input[1])
-    day = int(date_input[0])
-    date = datetime(year, month, day)
+käytä valinnassa annettuja kirjaimia k tai t.\n")
+    while True:
+        try:
+            date_input = str(input("Anna päivämäärä (pp.kk.vvvv): "))
+            date_input = date_input.split(".")
+            year = int(date_input[2])
+            month = int(date_input[1])
+            day = int(date_input[0])
+            date = datetime(year, month, day)
+            break
+        except:
+            print("\nSyötä päivämäärä muodossa pp.kk.vvvv\n")
     account = str(input("Anna tili: "))
     account = account.lower()
     account = account.capitalize()
@@ -84,6 +89,7 @@ käytä valinnassa annettuja kirjaimia.\n")
 käytä valinnassa numeroita.\n")
     description = str(input("Anna selite: "))
     print("")
+    print("Kirjaus lisätty.\n")
     if revenue_expense.lower == "k":
         amount = -1 * amount        
     accounting[len(accounting)+1] = [date, account, amount, description]
@@ -93,13 +99,13 @@ käytä valinnassa numeroita.\n")
 # Function to print data
 def print_data(accounting: dict):
     """
-    Prints all the data in the accounting dictionary.
+    Prints all the data in the given dictionary.
     """ 
     if accounting == {}:
-        print("\nEi kirjauksia tilikaudella.")
+        print("\nEi kirjauksia.")
     else:
     # Header 
-        nro_txt = "Juokseva nro"
+        nro_txt = "Tosite nro"
         date_txt = "PVM"
         account_txt = "Tili"
         sum__txt = "Summa"
@@ -143,6 +149,7 @@ päävalikkoon.\n")
         print(f"\nKirjanpito tallennettu vuodelta {year} \
 ja palataan päävalikkoon.\n") 
 
+
 # Function to print account balances
 def print_balance(year: int, accounting: dict):
     """
@@ -177,7 +184,6 @@ def print_balance(year: int, accounting: dict):
     expenses = dict(sorted(expenses.items()))
     revenues = dict(sorted(revenues.items()))
 
-
     # Printing loops
     if expenses == {} and revenues == {}:
         print("Ei kirjauksia tilikaudella.")
@@ -206,6 +212,48 @@ def print_balance(year: int, accounting: dict):
         print(f"  {balance_txt:20}{balance_sum:7}")    
 
 
+# Search function
+def search(accounting):
+    """
+    Search function is meant to browse through accounting and search relevant
+    data points according to the search parameters which are month, explanation
+    and account.
+    """
+    months = {
+    "tammikuu": 1, "helmikuu": 2, "maaliskuu": 3, "huhtikuu": 4,
+    "toukokuu": 5, "kesäkuu": 6, "heinäkuu": 7, "elokuu": 8, 
+    "syyskuu": 9, "lokakuu": 10, "marraskuu": 11, "joulukuu": 12
+    }
+    while True:
+        print("\nHae kirjauksia\n1: Kuukauden perusteella\n\
+2: Selitteen perusteella\n0: palaa takaisin")
+        search_output = {}
+        try:
+            choice = int(input("Valinta: "))
+            if choice == 0:
+                break
+            elif choice == 1:
+                month = input("\nAnna kuukausi (esim. heinäkuu): ")
+                month = month.lower()
+                month = months[month]
+                for key in accounting:
+                    date = accounting[key][0]
+                    date_month = date.month
+                    account = accounting[key][1]
+                    amount = accounting[key][2]
+                    expl = accounting[key][3]
+                    if date_month == month:
+                        search_output[key] = [date, account, amount, expl]
+                print_data(search_output)
+            elif choice == 2:
+                print("\nTätä toiminnallisuutta ei ole vielä rakennettu.\n")
+            else:
+                print("\nSyöttämäsi arvo on virheellinen, valitse \
+vaihtoehdoista oikea.\n")
+        except ValueError:
+            print("\nSyöttämäsi arvo on virheellinen, käytä valinnassa \
+numeroita.\n")
+
 
 # Program function
 def program(year, accounting):
@@ -217,7 +265,7 @@ def program(year, accounting):
     print("Ohjelma käynnistyi, valitse seuraavista toiminnallisuuksista:\n")
     while True:
         print("\nPäävalikko:\n1: Tee kirjauksia\n2: Tarkastele kirjaukset\n\
-3: Tulosta tulo- ja kuluerittely\n9: Käyttöohjeet\n\
+3: Etsi kirjauksia\n4: Tulosta tulo- ja kuluerittely\n9: Käyttöohjeet\n\
 0: Tallenna muutokset ja palaa päävalikkoon")
         try:
             choice2 = int(input("Valinta: "))
@@ -229,6 +277,8 @@ def program(year, accounting):
             elif choice2 == 2:
                 print_data(accounting)
             elif choice2 == 3:
+                search(accounting)
+            elif choice2 == 4:
                 print_balance(year, accounting)
             elif choice2 == 9:
                 help()
@@ -238,9 +288,6 @@ vaihtoehdoista oikea.\n")
         except ValueError:
             print("\nSyöttämäsi arvo on virheellinen, käytä valinnassa \
 numeroita.\n")
-
-
-
 
 
 #------------------------------------------------------------------
