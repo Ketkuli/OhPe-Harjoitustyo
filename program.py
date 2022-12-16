@@ -40,7 +40,11 @@ def choose_year():
                 with open(year_file) as file:
                     for row in file:
                         row = row.replace("\n", "").split(";")
-                        accounting[row[0]] = [row[1],row[2],row[3],row[4]]
+                        date = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
+                        account = row[2]
+                        amount = row[3]
+                        expl = row[4]
+                        accounting[row[0]] = [date,account,amount,expl]
                 return [year, accounting]
         except:
             print("\nSyöttämäsi arvo on virheellinen, \
@@ -62,8 +66,15 @@ def insert_data(accounting: dict):
         else:
             print("\nSyöttämäsi arvo on virheellinen, \
 käytä valinnassa annettuja kirjaimia.\n")
-    date = str(input("Anna päivämäärä: "))
+    date_input = str(input("Anna päivämäärä: "))
+    date_input = date_input.split(".")
+    year = int(date_input[2])
+    month = int(date_input[1])
+    day = int(date_input[0])
+    date = datetime(year, month, day)
     account = str(input("Anna tili: "))
+    account = account.lower()
+    account = account.capitalize()
     while True:
         try:
             amount = float(input("Anna summa: "))
@@ -84,27 +95,34 @@ def print_data(accounting: dict):
     """
     Prints all the data in the accounting dictionary.
     """ 
-
+    if accounting == {}:
+        print("\nEi kirjauksia tilikaudella.")
+    else:
     # Header 
-    nro_txt = "Juokseva nro"
-    date_txt = "PVM"
-    account_txt = "Tili"
-    sum__txt = "Summa"
-    expl_txt = "Selite"
-    heading_txt = "Tositteet" 
-    print("\n" + "-" * 80)
-    print(f"{heading_txt:^80}")
-    print("-" * 80)
-    print(f"{nro_txt:13} {date_txt:^15} {account_txt:14} {sum__txt:10} \
+        nro_txt = "Juokseva nro"
+        date_txt = "PVM"
+        account_txt = "Tili"
+        sum__txt = "Summa"
+        expl_txt = "Selite"
+        heading_txt = "Tositteet" 
+        print("\n" + "-" * 80)
+        print(f"{heading_txt:^80}")
+        print("-" * 80)
+        print(f"{nro_txt:13} {date_txt:^15} {account_txt:14} {sum__txt:10} \
 {expl_txt:29}")
 
 
-    # Print loop for each key in dictionary
-    for key in accounting:
-        print(f"{key:>12}: {accounting[key][0]:^15} {accounting[key][1]:14}\
- {accounting[key][2]:<10} {accounting[key][3]:29}")
-    print("-" * 80)
-    print("")
+        # Print loop for each key in dictionary
+        for key in accounting:
+            date = accounting[key][0]
+            account = accounting[key][1]
+            amount = accounting[key][2]
+            expl = accounting[key][3]
+            date = date.strftime("%d.%m.%Y")
+            print(f"{key:>12}: {date:^15} {account:14}\
+{amount:<10} {expl:29}") 
+        print("-" * 80)
+        print("")
 
 
 # Function to write data to a file
@@ -113,13 +131,16 @@ def write_data(year: int, accounting: dict):
     Trunks the original file and writes a new file with the 
     data in the dictionary.
     """
-
-    year_file = f"{year}.csv"
-    with open(year_file, "w") as file:
-        for row in accounting:
-            file.write(f"{row};{accounting[row][0]};{accounting[row][1]};\
+    if accounting == {}:
+        print(f"\nKirjanpito oli tyhjä, eikä uutta tiedostoa luotu. Palataan\
+päävalikkoon.\n")
+    else:
+        year_file = f"{year}.csv"
+        with open(year_file, "w") as file:
+            for row in accounting:
+                file.write(f"{row};{accounting[row][0]};{accounting[row][1]};\
 {accounting[row][2]};{accounting[row][3]}\n")
-    print(f"\nKirjanpito tallennettu vuodelta {year} \
+        print(f"\nKirjanpito tallennettu vuodelta {year} \
 ja palataan päävalikkoon.\n") 
 
 # Function to print account balances
@@ -158,28 +179,31 @@ def print_balance(year: int, accounting: dict):
 
 
     # Printing loops
-    print("  Tulot:") # Revenues
-    print("  "+"-" * 27)
-    together_txt = "Yhteensä"
-    balance_txt = "Tulos: "
-    total_revenue = 0
-    for key in revenues:
-        sum_calc = sum(revenues[key])
-        total_revenue += sum_calc
-        print(f"  {key:20}{sum_calc:7}")
-    print("  "+"-" * 27)
-    print(f"  {together_txt:20}{total_revenue:7}\n")
-    print("  "+"Kulut:") # Expenses
-    print("  "+"-" * 27)
-    total_expense = 0
-    for key in expenses:
-        sum_calc = -1 * sum(expenses[key])
-        total_expense += sum_calc
-        print(f"  {key:20}{sum_calc:7}")
-    print("  "+"-" * 27)
-    print(f"  {together_txt:20}{total_expense:7}\n")
-    balance_sum = total_revenue - total_expense
-    print(f"  {balance_txt:20}{balance_sum:7}")    
+    if expenses == {} and revenues == {}:
+        print("Ei kirjauksia tilikaudella.")
+    else:
+        print("  Tulot:") # Revenues
+        print("  "+"-" * 27)
+        together_txt = "Yhteensä"
+        balance_txt = "Tulos: "
+        total_revenue = 0
+        for key in revenues:
+            sum_calc = sum(revenues[key])
+            total_revenue += sum_calc
+            print(f"  {key:20}{sum_calc:7}")
+        print("  "+"-" * 27)
+        print(f"  {together_txt:20}{total_revenue:7}\n")
+        print("  "+"Kulut:") # Expenses
+        print("  "+"-" * 27)
+        total_expense = 0
+        for key in expenses:
+            sum_calc = -1 * sum(expenses[key])
+            total_expense += sum_calc
+            print(f"  {key:20}{sum_calc:7}")
+        print("  "+"-" * 27)
+        print(f"  {together_txt:20}{total_expense:7}\n")
+        balance_sum = total_revenue - total_expense
+        print(f"  {balance_txt:20}{balance_sum:7}")    
 
 
 
