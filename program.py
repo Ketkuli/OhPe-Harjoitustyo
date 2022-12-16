@@ -54,6 +54,14 @@ def insert_data(accounting: dict):
     Returns modified dictionary.
     """ 
     print("")
+    while True:    
+        # Checks if entry is expense or revenue:
+        revenue_expense = input("Onko kyseessä kulu vai tulo (k/t): ")
+        if revenue_expense.lower() == "k" or revenue_expense.lower() == "t":
+            break
+        else:
+            print("\nSyöttämäsi arvo on virheellinen, \
+käytä valinnassa annettuja kirjaimia.\n")
     date = str(input("Anna päivämäärä: "))
     account = str(input("Anna tili: "))
     while True:
@@ -64,7 +72,9 @@ def insert_data(accounting: dict):
             print("\nSyöttämäsi arvo on virheellinen, \
 käytä valinnassa numeroita.\n")
     description = str(input("Anna selite: "))
-    print("")        
+    print("")
+    if revenue_expense.lower == "k":
+        amount = -1 * amount        
     accounting[len(accounting)+1] = [date, account, amount, description]
     return accounting
 
@@ -74,6 +84,8 @@ def print_data(accounting: dict):
     """
     Prints all the data in the accounting dictionary.
     """ 
+
+    # Header 
     nro_txt = "Juokseva nro"
     pvm_txt = "PVM"
     tili_txt = "Tili"
@@ -85,9 +97,12 @@ def print_data(accounting: dict):
     print("-" * 80)
     print(f"{nro_txt:13} {pvm_txt:^15} {tili_txt:14} {summa__txt:10} \
 {selite_txt:29}")
+
+
+    # Print loop for each key in dictionary
     for key in accounting:
         print(f"{key:>12}: {accounting[key][0]:^15} {accounting[key][1]:14}\
- {accounting[key][2]:10} {accounting[key][3]:29}")
+ {accounting[key][2]:<10} {accounting[key][3]:29}")
     print("-" * 80)
     print("")
 
@@ -98,6 +113,7 @@ def write_data(year: int, accounting: dict):
     Trunks the original file and writes a new file with the 
     data in the dictionary.
     """
+
     year_file = f"{year}.csv"
     with open(year_file, "w") as file:
         for row in accounting:
@@ -105,6 +121,25 @@ def write_data(year: int, accounting: dict):
 {accounting[row][2]};{accounting[row][3]}\n")
     print(f"\nKirjanpito tallennettu vuodelta {year} \
 ja palataan päävalikkoon.\n") 
+
+# Function to print account balances
+def print_balance(year: int, accounting: dict):
+    """
+    Function to calculate expenses and revenue per account and then it prints\
+    summary.  
+    """
+
+    # Header
+    tuloslaskelma_txt = "Tuloslaskelma"
+    tilik = f"Tilikaudelle {year}" 
+    print("\n" + "-" * 80)
+    print(f"{tuloslaskelma_txt:^80}")
+    print(f"{tilik:^80}")
+    print("-" * 80)
+    print("")
+
+
+
 
 
 # Program function
@@ -117,6 +152,7 @@ def program(year, accounting):
     print("Ohjelma käynnistyi, valitse seuraavista toiminnallisuuksista:\n")
     while True:
         print("\nPäävalikko:\n1: Tee kirjauksia\n2: Tarkastele kirjaukset\n\
+3: Tulosta tulo- ja kuluerittely\n9: Käyttöohjeet\n\
 0: Tallenna muutokset ja palaa päävalikkoon")
         try:
             choice2 = int(input("Valinta: "))
@@ -127,6 +163,10 @@ def program(year, accounting):
                 insert_data(accounting)
             elif choice2 == 2:
                 print_data(accounting)
+            elif choice2 == 3:
+                print_balance(year, accounting)
+            elif choice2 == 9:
+                help()
             else:
                 print("\nSyöttämäsi arvo on virheellinen, valitse \
 vaihtoehdoista oikea.\n")
