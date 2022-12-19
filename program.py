@@ -246,7 +246,16 @@ def search(accounting):
                         search_output[key] = [date, account, amount, expl]
                 print_data(search_output)
             elif choice == 2:
-                print("\nTätä toiminnallisuutta ei ole vielä rakennettu.\n")
+                search_word = input("\nAnna hakusana tai sen osa: ")
+                for key in accounting:
+                    date = accounting[key][0]
+                    account = accounting[key][1]
+                    amount = accounting[key][2]
+                    expl = accounting[key][3]
+                    expl = expl.lower()
+                    if expl.find(search_word) != -1:
+                        search_output[key] = [date, account, amount, expl]
+                print_data(search_output)                        
             else:
                 print("\nSyöttämäsi arvo on virheellinen, valitse \
 vaihtoehdoista oikea.\n")
