@@ -80,7 +80,7 @@ def choose_year():
                 with open(year_file) as file:
                     for row in file:
                         row = row.replace("\n", "").split(";")
-                        key = row[0]
+                        key = int(row[0])
                         date = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
                         account = row[2]
                         amount = row[3]
@@ -93,7 +93,7 @@ käytä valinnassa numeroita.\n")
 
 
 # insert data for your accounting dictionary
-def insert_data(accounting: dict):
+def insert_data(year: int, accounting: dict):
     """
     Adds a new key with numbered label and data to the accounting dictionary. 
     Returns modified dictionary.
@@ -111,7 +111,9 @@ käytä valinnassa annettuja kirjaimia k tai t.\n")
         try:
             date_input = str(input("Anna päivämäärä (pp.kk.vvvv): "))
             date_input = date_input.split(".")
-            year = int(date_input[2])
+            if year != int(date_input[2]):
+                print(f"Syötetty vuosi ei vastaa valittua kirjanpidon vuotta,\
+syötetyn päivämäärän vuosi {int(date_input[2])} vaihdettu vuodeksi {year}")
             month = int(date_input[1])
             day = int(date_input[0])
             date = datetime(year, month, day)
@@ -124,15 +126,18 @@ käytä valinnassa annettuja kirjaimia k tai t.\n")
     while True:
         try:
             amount = float(input("Anna summa: "))
-            break
+            if amount > 0:
+                break
+            else:
+                print("Käytä positiivista lukua.")
         except ValueError:
             print("\nSyöttämäsi arvo on virheellinen, \
 käytä valinnassa numeroita.\n")
     description = str(input("Anna selite: "))
     print("")
     print("Kirjaus lisätty.\n")
-    if revenue_expense.lower == "k":
-        amount = -1 * amount        
+    if revenue_expense.lower() == "k":
+        amount = -1 * amount     
     accounting[len(accounting)+1] = [date, account, amount, description]
     return accounting
 
@@ -297,14 +302,18 @@ def search(accounting):
                     amount = accounting[key][2]
                     expl = accounting[key][3]
                     expl = expl.lower()
-                    if expl.find(search_word) != -1:
+                    if expl.find(search_word.lower()) != -1:
                         search_output[key] = [date, account, amount, expl]
                 print_data(search_output)
             elif choice == 3:
                 while True:
-                    key = (input("Anna muokattavan kirjauksen tositenumero, \
-0 lopettaa: "))
-                    if key == "0":
+                    try:
+                        key = int((input("Anna muokattavan kirjauksen \
+tositenumero, 0 lopettaa: ")))
+                    except ValueError:
+                        print("\nSyöttämäsi arvo on virheellinen, \
+käytä valinnassa numeroita.\n")
+                    if key == 0:
                         break
                     try:
                         date = accounting[key][0]
@@ -337,17 +346,31 @@ def search(accounting):
                                 ]
                                 break
                             elif edit_input == "3":
+                                while True:    
+                                    revenue_expense = input("\
+Onko kyseessä kulu vai tulo (k/t): ")
+                                    if revenue_expense.lower() == "k" \
+                                    or revenue_expense.lower() == "t":
+                                        break
+                                    else:
+                                        print("\nSyöttämäsi arvo on \
+virheellinen, käytä valinnassa annettuja kirjaimia k tai t.\n")
                                 while True:
                                     try: 
-                                        new_value = int(input("Anna uusi arvo \
-(Käytä negatiivista arvoa, jos kyseessä on kulu): "))
-                                        amount == new_value
-                                        accounting[key] = [
-                                        date, account, new_value, expl
-                                        ]
-                                        break
+                                        new_value = float(input("Anna uusi \
+arvo positiivisena lukuna: "))
+                                        if new_value > 0:
+                                            break
+                                        else:
+                                            print("Käytä positiivista lukua.")
                                     except ValueError:
                                         print("Syötä arvo numerona")
+                                amount == new_value
+                                if revenue_expense.lower() == "k":
+                                    amount = -1 * amount 
+                                accounting[key] = [
+                                date, account, new_value, expl
+                                ]
                                 break
                             elif edit_input == "4":
                                 new_value = input("Anna uusi arvo: ")
@@ -388,7 +411,7 @@ def program(year, accounting):
                 write_data(year, accounting) 
                 break
             elif choice2 == 1:
-                insert_data(accounting)
+                insert_data(year, accounting)
             elif choice2 == 2:
                 print_data(accounting)
             elif choice2 == 3:
