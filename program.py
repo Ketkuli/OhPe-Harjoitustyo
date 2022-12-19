@@ -10,13 +10,53 @@ from datetime import datetime
 
 
 # User guide function
-def help():
+def help(choice):
     """
     Help-function prints user manual.
     """
-    print("\nTervetuloa käyttöohjeisiin.")
-    print("")
-    print("Tervemenoa käyttöohjeista!\n")
+    if choice == "search_function":
+        print("\nTervetuloa haku- ja muokkausosion käyttöohjeisiin.\n")
+        print("Haku- ja muokkausosiossa voit tarkastella tehtyjä kirjauksia\
+ja muokata niitä tositenumeron sekä merkinnän tyypin mukaisesti.")
+        print("Valinnan 1 takaa pystyt valitsemaan kuukauden, jonka kirjauksia\n\
+ tarkastelet. Kirjaukset tulostetaan allekkain nähtäväksi kyseisen kuukauden\n\
+ osalta.")
+        print("Valinnan 2 takaa voit antaa hakusanan ja hakufunktio palauttaa\n\
+ kaikki ne kirjaukset, joiden selitteestä kyseinen merkkijonon osanen löytyy.")
+        print("Valinnan 3 takaa pystyt muokkaamaan tositenumeron mukaisesti \n\
+kirjauksia. Muokkauksen kohteena oleva kirjaus tulostetaan tarkasteltavaksi \n\
+ennen muokkaustapahtumaa.")
+    elif choice == "program":
+        print("\nTervetuloa päävalikon käyttöohjeisiin.\n")
+        print("Päävalikossa valitset mitä ohjelman toiminnallisuutta käytät.\n\
+Valinnan 1 takaa pystyt syöttämään uusia arvoja kirjanpitoon.\n\
+Valinnan 2 takaa saat nähtäville kaikki kirjanpidossa olevat kirjaukset\n\
+Valinnan 3 takaa pystyt tarkemmin hakemaan kirjauksia kuukauden ja selitteen\n\
+mukaan sekä muokkaamaan kirjauksia miten haluat.\n\
+Valinnan 4 takaa saat nähtäville koko tilikauden tuloslaskelman erittelyineen\n\
+, jotka on jaoteltuna kirjanpidon tilien mukaisesti omiin tulo- ja\n\
+kuluosioihin.\n\
+Valinnan 0 takaa pääset palaamaan alkuvalikkoon vaihtamaan kirjanpidon vuotta.")
+    elif choice == "main_loop":
+        print("\nTervetuloa alkuvalikon käyttöohjeisiin.\n")
+        print("Ohjelma jakautuu toiminnallisuuksiensa osalta siten, että\n\
+siirryttäessä alkuvalikosta päävalikkoon valitaan ensin kirjanpidon vuosi,\n\
+jota tarkastellaan, muokataan ja mistä saadaan tehtyä tuloslaskelma.\n\
+Kirjanpito tallennetaan aina omaan tiedostoonsa palatessa päävalikosta\n\
+alkuvalikkoon.")
+        print("Päävalikossa valitset mitä ohjelman toiminnallisuutta käytät.\n\
+Valinnan 1 takaa pystyt syöttämään uusia arvoja kirjanpitoon.\n\
+Valinnan 2 takaa saat nähtäville kaikki kirjanpidossa olevat kirjaukset\n\
+Valinnan 3 takaa pystyt tarkemmin hakemaan kirjauksia kuukauden ja selitteen\n\
+mukaan sekä muokkaamaan kirjauksia miten haluat.\n\
+Valinnan 4 takaa saat nähtäville koko tilikauden tuloslaskelman erittelyineen\n\
+, jotka on jaoteltuna kirjanpidon tilien mukaisesti omiin tulo- ja\n\
+kuluosioihin.\n\
+Valinnan 0 takaa pääset palaamaan alkuvalikkoon vaihtamaan kirjanpidon vuotta.")
+    else:
+        print("")
+
+
 
 
 # Chooce fiscal year function
@@ -40,11 +80,12 @@ def choose_year():
                 with open(year_file) as file:
                     for row in file:
                         row = row.replace("\n", "").split(";")
+                        key = row[0]
                         date = datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
                         account = row[2]
                         amount = row[3]
                         expl = row[4]
-                        accounting[row[0]] = [date,account,amount,expl]
+                        accounting[key] = [date,account,amount,expl]
                 return [year, accounting]
         except:
             print("\nSyöttämäsi arvo on virheellinen, \
@@ -226,12 +267,15 @@ def search(accounting):
     }
     while True:
         print("\nHae kirjauksia\n1: Kuukauden perusteella\n\
-2: Selitteen perusteella\n0: palaa takaisin")
+2: Selitteen perusteella\n\n3: Muokkaa kirjauksia\n\n9: Käyttöohjeet\n\
+0: palaa takaisin")
         search_output = {}
         try:
             choice = int(input("Valinta: "))
             if choice == 0:
-                break
+                return accounting
+            if choice == 9:
+                help("search_function")
             elif choice == 1:
                 month = input("\nAnna kuukausi (esim. heinäkuu): ")
                 month = month.lower()
@@ -255,7 +299,69 @@ def search(accounting):
                     expl = expl.lower()
                     if expl.find(search_word) != -1:
                         search_output[key] = [date, account, amount, expl]
-                print_data(search_output)                        
+                print_data(search_output)
+            elif choice == 3:
+                while True:
+                    key = (input("Anna muokattavan kirjauksen tositenumero, \
+0 lopettaa: "))
+                    if key == "0":
+                        break
+                    try:
+                        date = accounting[key][0]
+                        account = accounting[key][1]
+                        amount = accounting[key][2]
+                        expl = accounting[key][3]
+                        search_output[key] = [date, account, amount, expl]
+                        print_data(search_output)
+                        while True:
+                            edit_input = input("Valitse muokattava osa: \
+1 päivämäärä, 2 tili, 3 summa ja 4 selite (0 lopettaa): ") 
+                            if edit_input == "0":
+                                break                          
+                            elif edit_input == "1":
+                                new_value = input("Anna uusi arvo: ")
+                                new_value = new_value.split(".")
+                                year = int(new_value[2])
+                                month = int(new_value[1])
+                                day = int(new_value[0])
+                                new_date = datetime(year, month, day)
+                                accounting[key] = [
+                                new_date, account, amount, expl
+                                ]
+                                break
+                            elif edit_input == "2":
+                                new_value = input("Anna uusi arvo: ")
+                                new_value = new_value.capitalize()
+                                accounting[key] = [
+                                date, new_value, amount, expl
+                                ]
+                                break
+                            elif edit_input == "3":
+                                while True:
+                                    try: 
+                                        new_value = int(input("Anna uusi arvo \
+(Käytä negatiivista arvoa, jos kyseessä on kulu): "))
+                                        amount == new_value
+                                        accounting[key] = [
+                                        date, account, new_value, expl
+                                        ]
+                                        break
+                                    except ValueError:
+                                        print("Syötä arvo numerona")
+                                break
+                            elif edit_input == "4":
+                                new_value = input("Anna uusi arvo: ")
+                                expl = new_value
+                                accounting[key] = [
+                                date, account, amount, new_value
+                                ]
+                                break
+                            else:
+                                print("\nSyöttämäsi arvo on virheellinen,\
+valitse vaihtoehdoista oikea.\n")
+                        break
+                    except KeyError:
+                        print("\nTositenumerolla ei löytynyt kirjausta\n")
             else:
                 print("\nSyöttämäsi arvo on virheellinen, valitse \
 vaihtoehdoista oikea.\n")
@@ -274,8 +380,8 @@ def program(year, accounting):
     print("Ohjelma käynnistyi, valitse seuraavista toiminnallisuuksista:\n")
     while True:
         print("\nPäävalikko:\n1: Tee kirjauksia\n2: Tarkastele kirjaukset\n\
-3: Etsi kirjauksia\n4: Tulosta tulo- ja kuluerittely\n9: Käyttöohjeet\n\
-0: Tallenna muutokset ja palaa päävalikkoon")
+3: Hae ja muokkaa kirjauksia\n4: Tulosta tulo- ja kuluerittely\n\
+9: Käyttöohjeet\n0: Tallenna muutokset ja palaa päävalikkoon")
         try:
             choice2 = int(input("Valinta: "))
             if choice2 == 0:
@@ -290,7 +396,7 @@ def program(year, accounting):
             elif choice2 == 4:
                 print_balance(year, accounting)
             elif choice2 == 9:
-                help()
+                help("program")
             else:
                 print("\nSyöttämäsi arvo on virheellinen, valitse \
 vaihtoehdoista oikea.\n")
@@ -324,7 +430,7 @@ Aloita ohjelman käyttö valitsemalla seuraavista toiminnoista:\n")
                 accounting = output[1]
                 program(year, accounting)
             elif choice1 == 2:
-                help()
+                help("main_loop")
             else:
                 print("\nSyöttämäsi arvo on virheellinen, \
 valitse vaihtoehdoista oikea.\n")
